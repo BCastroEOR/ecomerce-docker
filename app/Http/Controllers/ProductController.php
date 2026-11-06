@@ -17,7 +17,6 @@ class ProductController extends Controller
         path: '/products',
         summary: 'Obtener lista de productos',
         tags: ['Products'],
-        security: [['bearerAuth' => []]],
         parameters: [
             new OA\Parameter(
                 name: 'page',
@@ -34,7 +33,6 @@ class ProductController extends Controller
                 description: 'Lista paginada de productos',
                 content: new OA\JsonContent(ref: '#/components/schemas/ProductListResponse')
             ),
-            new OA\Response(response: 401, description: 'Token ausente o inválido'),
         ]
     )]
     public function index(): JsonResponse
@@ -82,7 +80,6 @@ class ProductController extends Controller
         path: '/products/{product}',
         summary: 'Obtener un producto',
         tags: ['Products'],
-        security: [['bearerAuth' => []]],
         parameters: [
             new OA\Parameter(
                 name: 'product',
@@ -98,7 +95,6 @@ class ProductController extends Controller
                 description: 'Producto obtenido exitosamente',
                 content: new OA\JsonContent(ref: '#/components/schemas/ProductResponse')
             ),
-            new OA\Response(response: 401, description: 'Token ausente o inválido'),
             new OA\Response(response: 404, description: 'Producto no encontrado'),
         ]
     )]

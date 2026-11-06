@@ -473,16 +473,8 @@
                                 }
                             }
                         }
-                    },
-                    "401": {
-                        "description": "Token ausente o inválido"
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             },
             "post": {
                 "tags": [
@@ -554,18 +546,10 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "Token ausente o inválido"
-                    },
                     "404": {
                         "description": "Producto no encontrado"
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             },
             "put": {
                 "tags": [
@@ -926,9 +910,15 @@
                         "oneOf": [
                             {
                                 "$ref": "#/components/schemas/Product"
+                            },
+                            {
+                                "type": "object",
+                                "nullable": true,
+                                "enum": [
+                                    null
+                                ]
                             }
-                        ],
-                        "nullable": true
+                        ]
                     }
                 },
                 "type": "object"
@@ -1204,9 +1194,7 @@
                     },
                     {
                         "properties": {
-                            "data": {
-                                "nullable": true
-                            }
+                            "data": {}
                         },
                         "type": "object"
                     }

@@ -9,9 +9,11 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'store']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Catálogo público: listado y detalle de productos no requieren autenticación.
+Route::apiResource('products', ProductController::class)->only(['index', 'show']);
+
 Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::apiResource('products', ProductController::class)->only(['index', 'show']);
     Route::apiResource('products', ProductController::class)
         ->except(['index', 'show'])
         ->middleware('admin');
