@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Genera .next/standalone: servidor mínimo + solo las dependencias que realmente usa la app (imagen Docker ligera).
+  output: "standalone",
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

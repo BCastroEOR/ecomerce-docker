@@ -1,0 +1,113 @@
+# =============================================================================
+# Ecosistema e-commerce: Next.js (frontend) + Laravel (API) + MySQL
+# Uso:  cp .env.example .env   # completar valores
+#       docker compose up -d --build
+# =============================================================================
+name: ecommerce
+
+services:
+  # ---------------------------------------------------------------------------
+  # Base de datos MySQL 8.0 — solo accesible dentro de la red backend-net
+  # ---------------------------------------------------------------------------
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Define MYSQL_ROOT_PASSWORD en .env}
+      MYSQL_DATABASE: ${DB_DATABASE:-ecomerce}
+      MYSQL_USER: ${DB_USERNAME:-ecomerce}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+    # Sin "ports": el 3306 NO se publica en el host (solo red interna).
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - backend-net
+
+  # ---------------------------------------------------------------------------
+  # API Laravel — PHP-FPM (no expuesto; Nginx le reenvía por FastCGI)
+  # ---------------------------------------------------------------------------
+  php:
+    build:
+      context: ./backend
+      target: php
+    image: ecommerce-api-php:latest
+    restart: unless-stopped
+    environment:
+      APP_NAME: ${APP_NAME:-Ecommerce API}
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY}
+      APP_URL: ${APP_URL:-http://localhost:8000}
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: ${LOG_LEVEL:-warning}
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-ecomerce}
+      DB_USERNAME: ${DB_USERNAME:-ecomerce}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+      JWT_SECRET: ${JWT_SECRET}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend-net
+
+  # ---------------------------------------------------------------------------
+  # Nginx — proxy inverso de la API (puerto publicado: BACKEND_PORT -> 80)
+  # ---------------------------------------------------------------------------
+  nginx:
+    build:
+      context: ./backend
+      target: nginx
+    image: ecommerce-api-nginx:latest
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8000}:80"
+    depends_on:
+      php:
+        condition: service_healthy
+    networks:
+      - backend-net
+      - frontend-net
+
+  # ---------------------------------------------------------------------------
+  # Frontend Next.js — consume la API por la red interna (http://nginx/api)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-}
+    image: ecommerce-frontend:latest
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: http://nginx/api
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      nginx:
+        condition: service_healthy
+    networks:
+      - frontend-net
+
+networks:
+  # db, php y nginx: la base de datos solo es visible aquí
+  backend-net:
+  # nginx y frontend: el frontend nunca ve la base de datos
+  frontend-net:
+
+volumes:
+  db-data:

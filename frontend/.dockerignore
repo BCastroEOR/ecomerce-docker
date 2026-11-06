@@ -1,0 +1,24 @@
+# Dependencias y artefactos de build: se generan dentro de la imagen
+node_modules
+.next
+out
+build
+coverage
+*.tsbuildinfo
+next-env.d.ts
+
+# Secretos y configuración local: nunca deben quedar dentro de una capa
+.env
+.env.*
+!.env.example
+
+# Control de versiones, documentación y herramientas
+.git
+.gitignore
+docs
+README.md
+AGENTS.md
+Dockerfile
+.dockerignore
+npm-debug.log*
+.DS_Store

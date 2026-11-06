@@ -1,0 +1,42 @@
+# Dependencias: vendor/ se instala dentro de la imagen; node_modules no se usa en producción
+vendor
+node_modules
+public/build
+public/hot
+public/storage
+
+# Secretos y configuración local
+.env
+.env.*
+!.env.example
+auth.json
+
+# Cachés y logs generados localmente (packages.php local incluye paquetes de desarrollo)
+bootstrap/cache/*.php
+storage/logs/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/pail
+.phpunit.cache
+.phpunit.result.cache
+
+# Pruebas, herramientas de desarrollo y control de versiones
+tests
+phpunit.xml
+.git
+.gitignore
+.gitattributes
+.editorconfig
+.agents
+.claude
+.mcp.json
+.npmrc
+AGENTS.md
+CLAUDE.md
+README.md
+boost.json
+opencode.json
+compose.yml
+Dockerfile
+.dockerignore
